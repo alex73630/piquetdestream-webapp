@@ -1,9 +1,11 @@
-import { type NextPage } from "next"
+import { type GetServerSidePropsContext, type NextPage } from "next"
 import Head from "next/head"
 import Link from "next/link"
 import { signIn, signOut, useSession } from "next-auth/react"
 
 import { api } from "~/utils/api"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../server/auth"
 
 const Home: NextPage = () => {
 	const hello = api.example.hello.useQuery({ text: "from tRPC" })
@@ -67,21 +69,6 @@ const AuthShowcase: React.FC = () => {
 			<p className="text-center text-2xl text-white">
 				{sessionData && <span>Logged in as {sessionData.user?.name}</span>}
 				{secretMessage && <span> - {secretMessage}</span>}
-				{sessionData && (
-					<p>
-						Account linked:{" "}
-						{sessionData.user?.connectedAccounts
-							?.map(
-								(acc) =>
-									`${acc.provider}: ${acc.providerAccountName} ${
-										acc.provider === "discord" && sessionData.user.roles.length > 0
-											? `(with roles: ${sessionData.user.roles.join(", ")})`
-											: ""
-									}`
-							)
-							.join(", ")}
-					</p>
-				)}
 			</p>
 			<button
 				className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
@@ -99,4 +86,21 @@ const AuthShowcase: React.FC = () => {
 			)}
 		</div>
 	)
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+	const session = await getServerSession(context.req, context.res, authOptions)
+
+	if (session) {
+		return {
+			redirect: {
+				destination: "/dashboard",
+				permanent: false
+			}
+		}
+	}
+
+	return {
+		props: {}
+	}
 }

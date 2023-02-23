@@ -25,6 +25,8 @@ declare module "next-auth" {
 				providerAccountId: string
 				providerAccountName: string
 			}[]
+			completedObsSetup: boolean
+			completedOnboarding: boolean
 			isInGuild: boolean
 			roles: RolesEnum[]
 			// ...other properties
@@ -46,32 +48,83 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
 	callbacks: {
-		async session({ session, user, token }) {
-			console.log("session callback", { token })
-			if (session.user) {
+		// Allow sign in :
+		// - with Discord only if user is in the guild
+		// - with Twitch only if user has an existing account logged with Discord
+		async signIn({ user, account }) {
+			if (user && account && account.provider === "discord") {
+				if (account.access_token) {
+					try {
+						const guildMember = await DiscordOauthClient.getGuildMember(
+							account.access_token,
+							env.DISCORD_GUILD_ID
+						)
+						if (guildMember) {
+							return true
+						}
+					} catch (error) {
+						console.log("Error while getting guild member", user.name)
+						return "/?loginError=discord.notInGuild"
+					}
+				}
+			} else if (account && account.provider === "twitch") {
+				console.log("Login from Twitch")
+				// Check if user has existing account logged with Discord
+				const existingUser = await prisma.user.findFirst({
+					where: {
+						id: user.id,
+						accounts: {
+							some: {
+								provider: "discord",
+								providerAccountName: user.name
+							}
+						}
+					}
+				})
+
+				if (existingUser) {
+					console.log("Existing user, allow login", user.id)
+					return true
+				} else {
+					console.log("New user, deny login")
+					// Delete user and account
+					await prisma.user.delete({
+						where: {
+							id: user.id
+						}
+					})
+					return "/?loginError=twitch.loginNotAllowed"
+				}
+			}
+			return "/?loginError=unknown"
+		},
+		async session({ session, token }) {
+			if (session.user && token.sub) {
 				const accounts = await prisma.account.findMany({
 					where: {
-						userId: user.id
+						userId: token.sub
 					}
 				})
 
 				const userState = await prisma.userState.findFirst({
 					where: {
-						userId: user.id
+						userId: token.sub
 					}
 				})
 
-				session.user.id = user.id
+				session.user.id = token.sub
 				session.user.connectedAccounts = accounts.map((account) => ({
 					provider: account.provider,
 					providerAccountId: account.providerAccountId,
 					providerAccountName: account.providerAccountName || ""
 				}))
+				session.user.completedObsSetup = !!userState?.completedObsSetup
+				session.user.completedOnboarding = !!userState?.completedOnboarding
 				session.user.isInGuild = !!userState
 				session.user.roles = (userState?.roles as RolesEnum[]) || []
 				// session.user.role = user.role; <-- put other properties on the session here
 			}
-			console.log("session callback", session.user)
+
 			return session
 		}
 	},
@@ -135,6 +188,12 @@ export const authOptions: NextAuthOptions = {
 		}
 	},
 	adapter: PrismaAdapter(prisma),
+	pages: {
+		signIn: "/login"
+	},
+	session: {
+		strategy: "jwt"
+	},
 	providers: [
 		DiscordProvider<DiscordProfile>({
 			clientId: env.DISCORD_CLIENT_ID,

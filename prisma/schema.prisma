@@ -69,10 +69,12 @@ model User {
 }
 
 model UserState {
-    id     String   @id @default(cuid())
-    userId String   @unique
-    roles  String[]
-    user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id                  String   @id @default(cuid())
+    userId              String   @unique
+    roles               String[]
+    completedObsSetup   Boolean?
+    completedOnboarding Boolean?
+    user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {

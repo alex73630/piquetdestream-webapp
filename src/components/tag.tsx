@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react"
+import { classNames } from "../utils/class-names"
 
 type TagProps = {
 	text: string
 	color?: string
-}
-
-function classNames(...classes: string[]) {
-	return classes.filter(Boolean).join(" ")
 }
 
 export default function Tag({ text, color }: TagProps) {

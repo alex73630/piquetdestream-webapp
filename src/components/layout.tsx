@@ -2,15 +2,18 @@ import { useEffect, useState, type ReactElement } from "react"
 import { Fragment } from "react"
 import { Disclosure, Menu, Transition } from "@headlessui/react"
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 
 import logo from "~/../public/logos/Logo-WoText.png"
 import Head from "next/head"
+import Link from "next/link"
+import { classNames } from "../utils/class-names"
 
 export enum NavigationEnum {
 	Dashboard = "Dashboard",
-	Planning = "Planning"
+	Planning = "Planning",
+	StreamRequest = "StreamRequest"
 }
 
 interface NavigationItem {
@@ -27,11 +30,20 @@ type LayoutProps = {
 	navigation: NavigationEnum
 }
 
-const userNavigation = [{ name: "Sign out", href: "/api/auth/signout" }]
-
-function classNames(...classes: string[]) {
-	return classes.filter(Boolean).join(" ")
+interface UserNavigation {
+	name: string
+	href?: string
+	onClick?: () => void
 }
+
+const userNavigation: UserNavigation[] = [
+	{
+		name: "Sign out",
+		onClick: () => {
+			void signOut({ callbackUrl: "/" })
+		}
+	}
+]
 
 export default function Layout({ children, headerTitle, navigation }: LayoutProps) {
 	const { data: sessionData } = useSession()
@@ -50,8 +62,17 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 			id: NavigationEnum.Planning,
 			name: "Planning",
 			href: "/dashboard/planning",
+			// Visble if user is admin/planning or streamer after completing OBS configuration step
 			visible: true,
 			current: navigation === NavigationEnum.Planning
+		},
+		{
+			id: NavigationEnum.StreamRequest,
+			name: "Stream Request",
+			href: "/dashboard/planning",
+			// Visble if user is streamer after completing OBS configuration step
+			visible: true,
+			current: navigation === NavigationEnum.StreamRequest
 		}
 	])
 
@@ -74,7 +95,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 	return (
 		<>
 			<Head>
-				<title>Piquet De Stream - {headerTitle}</title>
+				<title>{"Piquet De Stream - " + headerTitle}</title>
 			</Head>
 			<div className="min-h-full">
 				<Disclosure as="nav" className="bg-red-800">
@@ -91,7 +112,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 												{navigationList.map(
 													(item) =>
 														item.visible && (
-															<a
+															<Link
 																key={item.name}
 																href={item.href}
 																className={classNames(
@@ -103,7 +124,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 																aria-current={item.current ? "page" : undefined}
 															>
 																{item.name}
-															</a>
+															</Link>
 														)
 												)}
 											</div>
@@ -153,6 +174,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 																{({ active }) => (
 																	<a
 																		href={item.href}
+																		onClick={item.onClick}
 																		className={classNames(
 																			active ? "bg-gray-100" : "",
 																			"block px-4 py-2 text-sm text-gray-700"
@@ -189,7 +211,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 											item.visible && (
 												<Disclosure.Button
 													key={item.name}
-													as="a"
+													as={Link}
 													href={item.href}
 													className={classNames(
 														item.current ? "bg-red-900 text-white" : "text-gray-300 hover:bg-red-700 hover:text-white",
@@ -227,6 +249,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 												key={item.name}
 												as="a"
 												href={item.href}
+												onClick={item.onClick}
 												className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-red-700 hover:text-white"
 											>
 												{item.name}
