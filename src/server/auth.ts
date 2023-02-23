@@ -69,32 +69,7 @@ export const authOptions: NextAuthOptions = {
 				}
 			} else if (account && account.provider === "twitch") {
 				console.log("Login from Twitch")
-				// Check if user has existing account logged with Discord
-				const existingUser = await prisma.user.findFirst({
-					where: {
-						id: user.id,
-						accounts: {
-							some: {
-								provider: "discord",
-								providerAccountName: user.name
-							}
-						}
-					}
-				})
-
-				if (existingUser) {
-					console.log("Existing user, allow login", user.id)
-					return true
-				} else {
-					console.log("New user, deny login")
-					// Delete user and account
-					await prisma.user.delete({
-						where: {
-							id: user.id
-						}
-					})
-					return "/?loginError=twitch.loginNotAllowed"
-				}
+				return true
 			}
 			return "/?loginError=unknown"
 		},
@@ -126,6 +101,44 @@ export const authOptions: NextAuthOptions = {
 			}
 
 			return session
+		},
+		async jwt({ token, user, account, isNewUser }) {
+			// Reject token if user is not in the guild
+			if (account && account.provider === "discord") {
+				if (account.access_token) {
+					try {
+						const guildMember = await DiscordOauthClient.getGuildMember(
+							account.access_token,
+							env.DISCORD_GUILD_ID
+						)
+						if (!guildMember) {
+							throw new Error("unauthorized")
+						}
+					} catch (error) {
+						console.log("Error while getting guild member", user?.name)
+						throw new Error("unauthorized")
+					}
+				}
+			}
+
+			// Throw error if new user from Twitch
+			if (account && account.provider === "twitch" && isNewUser) {
+				// delete user and account
+				if (user) {
+					await prisma.user.delete({
+						where: {
+							id: user.id
+						}
+					})
+				}
+				throw new Error("unauthorized")
+			}
+
+			if (user) {
+				token.sub = user.id
+			}
+
+			return token
 		}
 	},
 	events: {
