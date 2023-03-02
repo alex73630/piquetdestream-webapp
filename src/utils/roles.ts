@@ -9,6 +9,10 @@ export function roleIdToEnum(roleId: string): RolesEnum | null {
 			return RolesEnum.PLANNING
 		case env.DISCORD_ROLE_STREAMER.includes(roleId):
 			return RolesEnum.STREAMER
+		case env.DISCORD_ROLE_TECH.includes(roleId):
+			return RolesEnum.TECH
+		case env.DISCORD_ROLE_MODERATOR.includes(roleId):
+			return RolesEnum.MODERATOR
 		default:
 			return null
 	}

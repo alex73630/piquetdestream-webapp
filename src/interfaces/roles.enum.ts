@@ -1,5 +1,7 @@
 export enum RolesEnum {
 	ADMIN = "ADMIN",
 	PLANNING = "PLANNING",
+	TECH = "TECH",
+	MODERATOR = "MODERATOR",
 	STREAMER = "STREAMER"
 }

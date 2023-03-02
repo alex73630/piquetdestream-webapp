@@ -18,7 +18,7 @@ export default function Tag({ text, color }: TagProps) {
 	}, [color])
 
 	return (
-		<span className={classNames("mr-1 inline-flex rounded-full px-2 text-xs font-semibold leading-5", tagColor)}>
+		<span className={classNames("inline-flex rounded-full px-2 text-xs font-semibold leading-5", tagColor)}>
 			{text}
 		</span>
 	)

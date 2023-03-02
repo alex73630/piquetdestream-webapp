@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from "react"
+import { useMemo, type ReactElement } from "react"
 import { Fragment } from "react"
 import { Disclosure, Menu, Transition } from "@headlessui/react"
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
@@ -9,6 +9,8 @@ import logo from "~/../public/logos/Logo-WoText.png"
 import Head from "next/head"
 import Link from "next/link"
 import { classNames } from "../utils/class-names"
+import { type Session } from "next-auth"
+import { RolesEnum } from "../interfaces/roles.enum"
 
 export enum NavigationEnum {
 	Dashboard = "Dashboard",
@@ -20,7 +22,7 @@ interface NavigationItem {
 	id: NavigationEnum
 	name: string
 	href: string
-	visible: boolean
+	visible: boolean | ((session: Session) => boolean)
 	current: boolean
 }
 
@@ -48,49 +50,32 @@ const userNavigation: UserNavigation[] = [
 export default function Layout({ children, headerTitle, navigation }: LayoutProps) {
 	const { data: sessionData } = useSession()
 
-	const [currentNavigation, setCurrentNavigation] = useState<NavigationEnum>(navigation)
-
-	const [navigationList, setNavigationList] = useState<NavigationItem[]>([
-		{
-			id: NavigationEnum.Dashboard,
-			name: "Dashboard",
-			href: "/dashboard",
-			visible: true,
-			current: navigation === NavigationEnum.Dashboard
-		},
-		{
-			id: NavigationEnum.Planning,
-			name: "Planning",
-			href: "/dashboard/planning",
-			// Visble if user is admin/planning or streamer after completing OBS configuration step
-			visible: true,
-			current: navigation === NavigationEnum.Planning
-		},
-		{
-			id: NavigationEnum.StreamRequest,
-			name: "Stream Request",
-			href: "/dashboard/planning",
-			// Visble if user is streamer after completing OBS configuration step
-			visible: true,
-			current: navigation === NavigationEnum.StreamRequest
-		}
-	])
-
-	useEffect(() => {
-		if (navigation !== currentNavigation) {
-			setCurrentNavigation(navigation)
-			// Update navigationList current
-			setNavigationList((prev) => {
-				return prev.map((item) => {
-					if (item.id === navigation) {
-						return { ...item, current: true }
-					} else {
-						return { ...item, current: false }
-					}
-				})
-			})
-		}
-	}, [navigationList, navigation, currentNavigation])
+	const navigationList = useMemo<NavigationItem[]>(() => {
+		return [
+			{
+				id: NavigationEnum.Dashboard,
+				name: "Dashboard",
+				href: "/dashboard",
+				visible: true,
+				current: navigation === NavigationEnum.Dashboard
+			},
+			{
+				id: NavigationEnum.Planning,
+				name: "Planning",
+				href: "/dashboard/planning",
+				visible: true,
+				current: navigation === NavigationEnum.Planning
+			},
+			{
+				id: NavigationEnum.StreamRequest,
+				name: "Stream Request",
+				href: "/dashboard/planning/requests/new",
+				// Visble if user is streamer after completing OBS configuration step
+				visible: !!sessionData?.user.roles.includes(RolesEnum.STREAMER) && !!sessionData?.user.completedObsSetup,
+				current: navigation === NavigationEnum.StreamRequest
+			}
+		]
+	}, [navigation, sessionData])
 
 	return (
 		<>
@@ -249,6 +234,7 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 												key={item.name}
 												as="a"
 												href={item.href}
+												// @ts-expect-error onClick is a valid prop for a in this case
 												onClick={item.onClick}
 												className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-red-700 hover:text-white"
 											>

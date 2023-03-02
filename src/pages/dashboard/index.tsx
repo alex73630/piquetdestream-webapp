@@ -80,7 +80,7 @@ export default function Page() {
 												<h4 className="text-lg font-bold">Discord</h4>
 												<p className="mt-1">{discordUsername || "Non connecté"}</p>
 												{discordUsername && (
-													<p className="mt-1 whitespace-nowrap">
+													<p className="mt-1 flex flex-wrap gap-2 whitespace-nowrap">
 														{roles.map((role) => {
 															let color = "green"
 															switch (role) {

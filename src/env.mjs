@@ -19,7 +19,7 @@ const arrayFromString = (/** @type {import("zod").ZodTypeAny} */ schema) => {
 const server = z.object({
 	DATABASE_URL: z.string().url(),
 	NODE_ENV: z.enum(["development", "test", "production"]),
-	NEXTAUTH_SECRET: process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
+	NEXTAUTH_SECRET: z.string().min(1),
 	NEXTAUTH_URL: z.preprocess(
 		// This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
 		// Since NextAuth.js automatically uses the VERCEL_URL if present.
@@ -34,6 +34,8 @@ const server = z.object({
 	DISCORD_ROLE_ADMIN: arrayFromString(z.string().min(1)),
 	DISCORD_ROLE_PLANNING: arrayFromString(z.string().min(1)),
 	DISCORD_ROLE_STREAMER: arrayFromString(z.string().min(1)),
+	DISCORD_ROLE_MODERATOR: arrayFromString(z.string().min(1)),
+	DISCORD_ROLE_TECH: arrayFromString(z.string().min(1)),
 	TWITCH_CLIENT_ID: z.string().min(1),
 	TWITCH_CLIENT_SECRET: z.string().min(1)
 })
@@ -63,6 +65,8 @@ const processEnv = {
 	DISCORD_ROLE_ADMIN: process.env.DISCORD_ROLE_ADMIN,
 	DISCORD_ROLE_PLANNING: process.env.DISCORD_ROLE_PLANNING,
 	DISCORD_ROLE_STREAMER: process.env.DISCORD_ROLE_STREAMER,
+	DISCORD_ROLE_MODERATOR: process.env.DISCORD_ROLE_MODERATOR,
+	DISCORD_ROLE_TECH: process.env.DISCORD_ROLE_TECH,
 	TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID,
 	TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET
 	// NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
