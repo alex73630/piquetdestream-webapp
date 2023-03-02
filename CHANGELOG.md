@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.0...v1.0.1) (2023-03-02)
+
+
+### Bug Fixes
+
+* missing files in deploy ([b935d3e](https://github.com/alex73630/piquetdestream-webapp/commit/b935d3e44fde8a0d29ab1c8f42ed4e87a10a4dcc))
+
 # 1.0.0 (2023-03-02)
 
 
