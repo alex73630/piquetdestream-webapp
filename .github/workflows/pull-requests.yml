@@ -57,6 +57,8 @@ jobs:
         run: npm ci
 
       - name: Build the app
+        env:
+          SKIP_ENV_VALIDATION: 1
         run: npm run build
 
       - name: Archive production artifacts
