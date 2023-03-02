@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.1.0...v1.1.1) (2023-03-02)
+
+
+### Bug Fixes
+
+* disable rootless mode for swap to work ([9e2a17a](https://github.com/alex73630/piquetdestream-webapp/commit/9e2a17ab29d5e47f12cf27b6ac8517f12c7af00a))
+
 # [1.1.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.3...v1.1.0) (2023-03-02)
 
 
