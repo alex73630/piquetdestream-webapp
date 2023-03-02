@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.3...v1.1.0) (2023-03-02)
+
+
+### Features
+
+* enable swap on prod to avoid oom ([9cc5cb7](https://github.com/alex73630/piquetdestream-webapp/commit/9cc5cb7476f090519a19af98220a74bcde635e7d))
+
 ## [1.0.3](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.2...v1.0.3) (2023-03-02)
 
 
