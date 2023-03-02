@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.2...v1.0.3) (2023-03-02)
+
+
+### Bug Fixes
+
+* add missing migrations for db ([39fce25](https://github.com/alex73630/piquetdestream-webapp/commit/39fce25f68f9937f61e065426c8b3124a707d9f6))
+
 ## [1.0.2](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.1...v1.0.2) (2023-03-02)
 
 
