@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.1...v1.0.2) (2023-03-02)
+
+
+### Bug Fixes
+
+* missing libs for prod ([dc7e37c](https://github.com/alex73630/piquetdestream-webapp/commit/dc7e37c7ce053ec5f3d9830fb31aa81620e52e8b))
+
 ## [1.0.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.0.0...v1.0.1) (2023-03-02)
 
 
