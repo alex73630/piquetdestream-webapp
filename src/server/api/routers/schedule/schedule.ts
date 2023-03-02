@@ -100,7 +100,7 @@ export const scheduleRouter = createTRPCRouter({
 		if (!streamer) {
 			throw new Error("Streamer not found")
 		}
-		if (!streamer.userState[0]?.roles.includes(RolesEnum.STREAMER)) {
+		if (!streamer.userState?.roles.includes(RolesEnum.STREAMER)) {
 			throw new Error("User is not a streamer")
 		}
 
@@ -358,7 +358,7 @@ export const scheduleRouter = createTRPCRouter({
 			}
 
 			// Check if tech has tech role
-			if (!tech.userState[0]?.roles.includes(RolesEnum.TECH)) {
+			if (!tech.userState?.roles.includes(RolesEnum.TECH)) {
 				throw new Error("User is not a tech")
 			}
 
@@ -368,7 +368,7 @@ export const scheduleRouter = createTRPCRouter({
 					id: streamRequest.techAppointment?.id
 				},
 				create: {
-					StreamRequest: {
+					streamRequest: {
 						connect: {
 							id: input.streamRequestId
 						}
@@ -414,7 +414,7 @@ export const scheduleRouter = createTRPCRouter({
 					id: input.techAppointmentId
 				},
 				include: {
-					StreamRequest: true
+					streamRequest: true
 				}
 			})
 
@@ -455,7 +455,7 @@ export const scheduleRouter = createTRPCRouter({
 
 			return ctx.prisma.streamRequest.findUnique({
 				where: {
-					id: techAppointment.StreamRequest?.id
+					id: techAppointment.streamRequest?.id
 				},
 				include: {
 					streamRequestTimeSlots: true,

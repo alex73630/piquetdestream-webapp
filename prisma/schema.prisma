@@ -50,10 +50,12 @@ model User {
     image            String?
     accounts         Account[]
     sessions         Session[]
-    userState        UserState[]
+    userState        UserState         @relation(fields: [userStateId], references: [id])
     streamRequests   StreamRequest[]
     availability     Availability[]
     techAppointments TechAppointment[]
+    userStateId      String            @unique
+    streamKey        StreamKey?
 }
 
 model UserState {
@@ -62,7 +64,7 @@ model UserState {
     roles               String[]
     completedObsSetup   Boolean?
     completedOnboarding Boolean?
-    user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User?
 }
 
 model VerificationToken {
@@ -111,7 +113,7 @@ model TechAppointment {
     status        TechAppointmentStatus
     techId        String
     tech          User                  @relation(fields: [techId], references: [id], onDelete: Cascade)
-    StreamRequest StreamRequest?
+    streamRequest StreamRequest?
 }
 
 enum TechAppointmentStatus {
@@ -134,4 +136,13 @@ enum AvailabilityType {
     MEDIATION
     STREAMER
     TECH
+}
+
+model StreamKey {
+    id        Int      @id @default(autoincrement())
+    key       String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    streamer  User     @relation(fields: [userId], references: [id])
+    userId    String   @unique
 }

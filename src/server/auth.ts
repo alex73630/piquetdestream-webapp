@@ -103,23 +103,23 @@ export const authOptions: NextAuthOptions = {
 			return session
 		},
 		async jwt({ token, user, account, isNewUser }) {
-			// Reject token if user is not in the guild
-			if (account && account.provider === "discord") {
-				if (account.access_token) {
-					try {
-						const guildMember = await DiscordOauthClient.getGuildMember(
-							account.access_token,
-							env.DISCORD_GUILD_ID
-						)
-						if (!guildMember) {
-							throw new Error("unauthorized")
-						}
-					} catch (error) {
-						console.log("Error while getting guild member", user?.name)
-						throw new Error("unauthorized")
-					}
-				}
-			}
+			// // Reject token if user is not in the guild
+			// if (account && account.provider === "discord") {
+			// 	if (account.access_token) {
+			// 		try {
+			// 			const guildMember = await DiscordOauthClient.getGuildMember(
+			// 				account.access_token,
+			// 				env.DISCORD_GUILD_ID
+			// 			)
+			// 			if (!guildMember) {
+			// 				throw new Error("unauthorized")
+			// 			}
+			// 		} catch (error) {
+			// 			console.log("Error while getting guild member", user?.name)
+			// 			throw new Error("unauthorized")
+			// 		}
+			// 	}
+			// }
 
 			// Throw error if new user from Twitch
 			if (account && account.provider === "twitch" && isNewUser) {
