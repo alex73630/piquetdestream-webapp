@@ -1,52 +1,45 @@
-import { Fragment, useCallback, useState } from "react"
+import { Fragment, useMemo } from "react"
 import { ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/react/20/solid"
 import { Menu, Transition } from "@headlessui/react"
 import { classNames } from "../../utils/class-names"
-import dayjs, { type Dayjs } from "dayjs"
-import "dayjs/locale/fr"
 import Grid from "./grid"
-import { type TimeSlotProps } from "./time-slot"
-import { type StreamRequestTimeslotStatus } from "@prisma/client"
+import {
+	type CalendarProps,
+	CalendarProvider,
+	useCalendarContext,
+	type CalendarProviderProps
+} from "./calendar-context"
 
-dayjs.locale("fr")
+function CalendarComponent() {
+	const { currentWeek, changeWeek } = useCalendarContext()
 
-function generateWeekDays(date?: Date) {
-	const weekDays: Dayjs[] = []
-	const startOfWeek = dayjs(date).startOf("week").toDate()
-	for (let i = 0; i < 7; i++) {
-		const day = dayjs(startOfWeek).add(i, "day")
-		weekDays.push(day)
-	}
-	return weekDays
-}
+	const currentMonth = useMemo(() => {
+		const months = currentWeek
+			.map((day) => day.format("MMMM YYYY"))
+			.reduce((acc, month) => {
+				if (acc[month]) {
+					acc[month] += 1
+				} else {
+					acc[month] = 1
+				}
+				return acc
+			}, {} as Record<string, number>)
 
-interface CalendarProps {
-	startDay?: Dayjs
-	onChange?: (events: TimeSlotProps[]) => void
-	mode: "edit" | "view"
-	filter?: StreamRequestTimeslotStatus[]
-}
-
-export default function Calendar({ startDay, onChange }: CalendarProps) {
-	const [currentWeek, setCurrentWeek] = useState<Dayjs[]>(generateWeekDays(startDay?.toDate() || undefined))
-
-	const changeWeek = (direction: "next" | "previous") => {
-		const firstDay = currentWeek[0] || dayjs().startOf("week")
-		const lastDay = currentWeek[currentWeek.length - 1] || dayjs().endOf("week")
-		const newWeek = generateWeekDays(
-			direction === "next" ? lastDay.add(1, "day").toDate() : firstDay.subtract(1, "day").toDate()
-		)
-		setCurrentWeek(newWeek)
-	}
-
-	const handleOnChangeEvent = useCallback(
-		(events: TimeSlotProps[]) => {
-			if (onChange) {
-				onChange(events)
+		// Return the month with the most days in the current week
+		return Object.keys(months).reduce((acc, month) => {
+			if (!acc) {
+				return month
 			}
-		},
-		[onChange]
-	)
+			if (!months[month] || !months[acc]) {
+				return acc
+			}
+			// @ts-expect-error - months[month] is a number
+			if (months[month] > months[acc]) {
+				return month
+			}
+			return acc
+		})
+	}, [currentWeek])
 
 	if (!currentWeek || currentWeek.length !== 7 || !currentWeek[0]) {
 		return <div>Loading...</div>
@@ -57,7 +50,7 @@ export default function Calendar({ startDay, onChange }: CalendarProps) {
 			<header className="flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
 				<h1 className="text-lg font-semibold text-gray-900">
 					<time dateTime={currentWeek[0]?.format("YYYY-MM")} className="capitalize">
-						{currentWeek[0]?.format("MMMM YYYY")}
+						{currentMonth}
 					</time>
 				</h1>
 				<div className="flex items-center">
@@ -76,7 +69,7 @@ export default function Calendar({ startDay, onChange }: CalendarProps) {
 							type="button"
 							className="hidden border-t border-b border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:relative md:block"
 							onClick={() => {
-								setCurrentWeek(generateWeekDays())
+								changeWeek("today")
 							}}
 						>
 							Aujourd&apos;hui
@@ -153,7 +146,15 @@ export default function Calendar({ startDay, onChange }: CalendarProps) {
 					</Menu>
 				</div>
 			</header>
-			<Grid currentWeek={currentWeek} mode="edit" onChange={handleOnChangeEvent} />
+			<Grid />
 		</div>
+	)
+}
+
+export default function Calendar(calendarProps: Partial<CalendarProps>) {
+	return (
+		<CalendarProvider {...calendarProps}>
+			<CalendarComponent />
+		</CalendarProvider>
 	)
 }

@@ -6,7 +6,8 @@ import { type TimeSlotProps } from "./time-slot"
 
 export enum CellTypes {
 	FREE = "free",
-	OCCUPIED = "occupied"
+	OCCUPIED = "occupied",
+	PAST = "past"
 }
 
 interface CellProps {
@@ -207,7 +208,9 @@ export default function Cell({ cell, cellRange, setCellRange, addEvent, grid }: 
 				"select-none",
 				isDragging ? "bg-slate-100 bg-opacity-50" : "",
 				isInRange() ? "bg-slate-100 bg-opacity-50" : "",
-				isSelectInColumn() ? "cursor-pointer" : "cursor-not-allowed bg-slate-200 bg-opacity-75"
+				isSelectInColumn() && cell.type !== CellTypes.PAST
+					? "cursor-pointer"
+					: "cursor-not-allowed bg-slate-200 bg-opacity-75"
 			)}
 			onClick={() => handleCellClick(cell)}
 		></div>

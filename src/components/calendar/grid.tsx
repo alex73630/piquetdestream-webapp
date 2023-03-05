@@ -5,6 +5,7 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import { api } from "../../utils/api"
 import { classNames } from "../../utils/class-names"
+import { useCalendarContext } from "./calendar-context"
 import Cell, { CellTypes } from "./cell"
 import TimeSlot, { type TimeSlotProps } from "./time-slot"
 
@@ -22,13 +23,8 @@ export interface CellRangeState {
 	colIndex: number | null
 }
 
-interface GridProps {
-	currentWeek: Dayjs[]
-	mode: "edit" | "view"
-	onChange?: (events: TimeSlotProps[]) => void
-}
-
-export default function Grid({ currentWeek, onChange }: GridProps) {
+export default function Grid() {
+	const { currentWeek, onTimeslotChange } = useCalendarContext()
 	const {
 		data: schedule,
 		isLoading: scheduleIsLoading,
@@ -69,6 +65,8 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 							}
 						}
 
+						if (dateEnd.isBefore(dayjs())) cellType = CellTypes.PAST
+
 						return {
 							col,
 							row,
@@ -95,20 +93,13 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 		}
 	}, [container, containerNav, containerOffset])
 
-	const handleOnChangeEvent = useCallback(() => {
-		if (onChange) {
-			onChange(events)
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [events])
-
 	const handleAddEvent = useCallback((event: TimeSlotProps) => {
 		setEvents((events) => [...events, event])
 	}, [])
 
 	useEffect(() => {
-		handleOnChangeEvent()
-	}, [events, handleOnChangeEvent])
+		onTimeslotChange(events)
+	}, [events, onTimeslotChange])
 
 	return (
 		<div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-white">

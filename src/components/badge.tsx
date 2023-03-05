@@ -1,3 +1,5 @@
+import { classNames } from "../utils/class-names"
+
 interface BadgeProps {
 	text: string
 	removable?: boolean
@@ -6,7 +8,12 @@ interface BadgeProps {
 
 export default function Badge({ text, removable, onRemove }: BadgeProps) {
 	return (
-		<span className="inline-flex items-center rounded-full bg-red-100 py-0.5 pl-2.5 pr-1 text-sm font-medium text-red-700">
+		<span
+			className={classNames(
+				"inline-flex items-center rounded-full bg-red-100 py-0.5 text-sm font-medium text-red-700",
+				removable ? "pl-2.5 pr-1" : "px-2.5"
+			)}
+		>
 			{text}
 			{removable && (
 				<button

@@ -1,9 +1,12 @@
 import { StreamRequestTimeslotStatus, TechAppointmentStatus } from "@prisma/client"
 import dayjs from "dayjs"
+import "dayjs/locale/fr"
 import { z } from "zod"
 import { RolesEnum } from "../../../../interfaces/roles.enum"
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../../trpc"
 import { CreateStreamRequestValidation } from "./validators"
+
+dayjs.locale("fr")
 
 export const scheduleRouter = createTRPCRouter({
 	getSchedule: publicProcedure
@@ -24,7 +27,7 @@ export const scheduleRouter = createTRPCRouter({
 		)
 		.query(({ ctx, input }) => {
 			const weekStart = dayjs(input.weekStart).startOf("day").toDate()
-			const weekEnd = dayjs(input.weekStart).add(7, "day").endOf("day").toDate()
+			const weekEnd = dayjs(input.weekStart).endOf("week").endOf("day").toDate()
 
 			// If user unauthenticated, they can only see approved stream requests
 			if (!ctx.session?.user) {
