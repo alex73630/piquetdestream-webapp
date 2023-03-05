@@ -50,11 +50,11 @@ model User {
     image            String?
     accounts         Account[]
     sessions         Session[]
-    userState        UserState         @relation(fields: [userStateId], references: [id])
+    userState        UserState?        @relation(fields: [userStateId], references: [id])
     streamRequests   StreamRequest[]
     availability     Availability[]
     techAppointments TechAppointment[]
-    userStateId      String            @unique
+    userStateId      String?           @unique
     streamKey        StreamKey?
 }
 

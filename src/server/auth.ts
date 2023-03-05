@@ -163,7 +163,7 @@ export const authOptions: NextAuthOptions = {
 							.filter((role) => !!role) as RolesEnum[]
 
 						// Update user state
-						await prisma.userState.upsert({
+						const userState = await prisma.userState.upsert({
 							where: {
 								userId: user.id
 							},
@@ -173,6 +173,18 @@ export const authOptions: NextAuthOptions = {
 							create: {
 								userId: user.id,
 								roles: roles
+							}
+						})
+						await prisma.user.update({
+							where: {
+								id: user.id
+							},
+							data: {
+								userState: {
+									connect: {
+										id: userState.id
+									}
+								}
 							}
 						})
 					} else {
