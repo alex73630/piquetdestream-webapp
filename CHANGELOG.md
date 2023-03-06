@@ -1,3 +1,19 @@
+# [1.2.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.1.1...v1.2.0) (2023-03-06)
+
+
+### Bug Fixes
+
+* broken userstate ([ddcfeb6](https://github.com/alex73630/piquetdestream-webapp/commit/ddcfeb696bf508762493f32a7aa321ccac701f51))
+* **db:** broken migrations ([6ac7508](https://github.com/alex73630/piquetdestream-webapp/commit/6ac75088618fd4f09757cfc310c2edab969d9a26))
+
+
+### Features
+
+* calendar enhancements and more (pr [#2](https://github.com/alex73630/piquetdestream-webapp/issues/2)) ([1674baf](https://github.com/alex73630/piquetdestream-webapp/commit/1674bafba3a6b04127374361de692a01c14360ae))
+* **calendar:** bunch of enhancements ([86d34ef](https://github.com/alex73630/piquetdestream-webapp/commit/86d34ef77c9994f85d74c491a4b9b0943a30c09b))
+* clean and start working on srt server thing ([912d3f2](https://github.com/alex73630/piquetdestream-webapp/commit/912d3f219240c8ee1263496eaa003851fc4bf460))
+* improve calendar state management ([eeaaaac](https://github.com/alex73630/piquetdestream-webapp/commit/eeaaaac6377b8f423cf111aaa50ca4224bc5943d))
+
 ## [1.1.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.1.0...v1.1.1) (2023-03-02)
 
 
