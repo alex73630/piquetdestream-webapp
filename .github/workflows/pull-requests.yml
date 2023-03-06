@@ -22,6 +22,11 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
+      - name: Build the app
+        env:
+          SKIP_ENV_VALIDATION: 1
+        run: npm run build
+
       - name: Run TypeScript type-checking
         run: npm run type-check
 
