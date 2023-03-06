@@ -1,12 +1,15 @@
-import { type StreamRequestTimeslotStatus } from "@prisma/client"
+import { XMarkIcon } from "@heroicons/react/20/solid"
+import { StreamRequestTimeslotStatus } from "@prisma/client"
 import dayjs, { type Dayjs } from "dayjs"
 import Weekday from "dayjs/plugin/weekday"
-import { useCallback } from "react"
+import { forwardRef, useCallback, useMemo } from "react"
+import { useDrag } from "react-dnd"
 import { classNames } from "../../utils/class-names"
+import { useCalendarContext } from "./calendar-context"
 dayjs.extend(Weekday)
 
-export function dateToRows(date: Dayjs): number {
-	const hours = date.hour()
+export function dateToRows(date: Dayjs, type: "start" | "end"): number {
+	const hours = date.hour() === 0 && type === "end" ? 24 : date.hour()
 	const minutes = date.minute()
 	return hours * 2 + Math.floor(minutes / 30) + 2
 }
@@ -33,17 +36,24 @@ export const ColsMapping = [
 ]
 
 export interface TimeSlotProps {
+	id?: string
 	start: Dayjs
 	end: Dayjs
-	title: string
+	title?: string
 	user?: string
-	status: StreamRequestTimeslotStatus
+	status?: StreamRequestTimeslotStatus
+	className?: string
+	mode: "display" | "edit"
 	onDelete?: () => void
 }
 
-export default function TimeSlot({ start, end, title, user, status }: TimeSlotProps) {
-	const startRows = dateToRows(start)
-	const endRows = dateToRows(end)
+const TimeSlotComponent = forwardRef<HTMLLIElement, TimeSlotProps>(function TimeSlotComp(
+	{ start, end, title = "New timeslot", user, status = StreamRequestTimeslotStatus.PENDING, onDelete, className = "" },
+	ref
+) {
+	const { currentDate } = useCalendarContext()
+	const startRows = dateToRows(start, "start")
+	const endRows = dateToRows(end, "end")
 	const spanRows = endRows - startRows
 
 	const col = dateToCol(start)
@@ -88,20 +98,33 @@ export default function TimeSlot({ start, end, title, user, status }: TimeSlotPr
 
 	return (
 		<li
+			ref={ref}
 			className={classNames(
-				"pointer-events-auto relative mt-px hidden sm:flex",
+				className,
+				"pointer-events-auto relative mt-px sm:flex",
+				start.isSame(currentDate, "day") ? "flex" : "hidden",
 				`${ColsMapping[col] || ""}`,
 				`sm:col-span-1`
 			)}
 			style={{ gridRow: `${startRows} / span ${spanRows}` }}
 		>
-			<a
-				href="#"
+			<div
 				className={classNames(
 					"group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs leading-5",
 					statusColor(status).bg
 				)}
 			>
+				{onDelete && (
+					<button
+						type="button"
+						className="absolute top-0 right-0 h-6 w-6 rounded-full p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+						onClick={onDelete}
+					>
+						<span className="sr-only">Supprimer</span>
+						<XMarkIcon />
+					</button>
+				)}
+
 				<p className={classNames("order-1 font-semibold", statusColor(status).text)}>{title}</p>
 				{user && <p className={classNames("order-1 font-semibold", statusColor(status).text)}>Par {user}</p>}
 				<p className={statusColor(status).subText}>
@@ -109,7 +132,56 @@ export default function TimeSlot({ start, end, title, user, status }: TimeSlotPr
 						{dayjs(start).format("HH:mm")} - {dayjs(end).format("HH:mm")}
 					</time>
 				</p>
-			</a>
+			</div>
 		</li>
 	)
+})
+
+export const TimeSlotDndType = "timeslot"
+export interface TimeSlotDndItem {
+	type: "timeslot"
+	id: string
+	start: Dayjs
+	end: Dayjs
+	spanRows: number
+}
+
+export interface TimeSlotDndOver {
+	col: number | null
+	row: number | null
+	span: number | null
+}
+
+function TimeSlotEditComponent(props: TimeSlotProps) {
+	const startRows = dateToRows(props.start, "start")
+	const endRows = dateToRows(props.end, "end")
+	const spanRows = endRows - startRows
+
+	const item = useMemo(
+		() => ({
+			type: "timeslot",
+			id: props.id,
+			start: props.start,
+			end: props.end,
+			spanRows
+		}),
+		[props.id, props.start, props.end, spanRows]
+	)
+
+	const [{ isDragging }, drag] = useDrag(() => ({
+		type: TimeSlotDndType,
+		item,
+		collect: (monitor) => ({
+			isDragging: !!monitor.isDragging()
+		})
+	}))
+
+	return <TimeSlotComponent ref={drag} {...props} className={classNames(isDragging ? "opacity-50" : "")} />
+}
+
+export default function TimeSlot(props: TimeSlotProps) {
+	if (props.mode === "display") {
+		return <TimeSlotComponent {...props} />
+	}
+	return <TimeSlotEditComponent {...props} />
 }

@@ -7,17 +7,39 @@ import {
 } from "@prisma/client"
 import dayjs, { type Dayjs } from "dayjs"
 import "dayjs/locale/fr"
-import { createContext, useCallback, useContext, useMemo, useState, type FunctionComponent } from "react"
+import {
+	createContext,
+	type Dispatch,
+	useContext,
+	useMemo,
+	useReducer,
+	useState,
+	type FunctionComponent,
+	useEffect
+} from "react"
 import { api } from "../../utils/api"
-import { type TimeSlotProps } from "./time-slot"
+import { type TimeSlotDndOver } from "./time-slot"
+import { type TimeSlotAction, type TimeSlotPayload, timeSlotReducer, type TimeSlotState } from "./timeslot-reducer"
 
 dayjs.locale("fr")
 
+export enum CalendarModeEnum {
+	VIEW = "view",
+	REQUEST = "request",
+	SCHEDULE = "schedule"
+}
+
 export type CalendarContextProps = {
+	currentDate: Dayjs
+	setCurrentDate: (date: Dayjs) => void
 	currentWeek: Dayjs[]
-	onTimeslotChange: (events: TimeSlotProps[]) => void
+	timeSlots: TimeSlotState
+	filteredTimeSlots: TimeSlotPayload[]
+	timeSlotDispatch: Dispatch<TimeSlotAction>
+	timeSlotDndOver: TimeSlotDndOver
+	setTimeSlotDndOver: (timeSlotDndOver: TimeSlotDndOver) => void
 	changeWeek: (direction: "next" | "previous" | "today") => void
-	mode: "edit" | "view"
+	mode: CalendarModeEnum
 	schedule: (StreamRequest & {
 		streamRequestTimeSlots: StreamRequestTimeSlots[]
 		techAppointment: TechAppointment | null
@@ -28,8 +50,8 @@ export type CalendarContextProps = {
 export type CalendarProps = {
 	startDate: Dayjs
 	statusFilter: StreamRequestTimeslotStatus[]
-	onChange: (events: TimeSlotProps[]) => void
-	mode: "edit" | "view"
+	onChange: (timeSlots: TimeSlotPayload[]) => void
+	mode: CalendarModeEnum
 }
 
 export type CalendarProviderProps = {
@@ -44,54 +66,79 @@ export const CalendarProvider: FunctionComponent<CalendarProviderProps> = ({
 	startDate: startDateProp,
 	statusFilter: statusFilterProp,
 	onChange,
-	mode = "view"
+	mode = CalendarModeEnum.VIEW
 }) => {
-	const [startDate, setStartDate] = useState(startDateProp || dayjs())
+	const [currentDate, setCurrentDate] = useState(startDateProp || dayjs())
 
-	const [statusFilter, _setStatusFilter] = useState<StreamRequestTimeslotStatus[]>(
-		statusFilterProp ?? [StreamRequestTimeslotStatus.APPROVED]
-	)
+	const [
+		statusFilter
+		// , setStatusFilter
+	] = useState<StreamRequestTimeslotStatus[]>(statusFilterProp ?? [StreamRequestTimeslotStatus.APPROVED])
 
 	const currentWeek = useMemo(() => {
-		const startOfWeek = startDate.startOf("week")
+		const startOfWeek = currentDate.startOf("week")
 		return Array(7)
 			.fill("")
 			.map((_, i) => startOfWeek.add(i, "day"))
-	}, [startDate])
+	}, [currentDate])
 
 	const changeWeek = (direction: "next" | "previous" | "today") => {
 		switch (direction) {
 			case "next":
-				setStartDate((prev) => prev.add(1, "week"))
+				setCurrentDate((prev) => prev.add(1, "week"))
 				break
 			case "previous":
-				setStartDate((prev) => prev.subtract(1, "week"))
+				setCurrentDate((prev) => prev.subtract(1, "week"))
 				break
 			case "today":
-				setStartDate(dayjs())
+				setCurrentDate(dayjs())
 				break
 		}
 	}
 
-	const handleTimeslotChange = useCallback(
-		(events: TimeSlotProps[]) => {
-			if (onChange) onChange(events)
-		},
-		[onChange]
-	)
+	const [timeSlotsState, timeSlotDispatch] = useReducer(timeSlotReducer, { timeSlots: [] })
 
-	const {
-		data: schedule,
-		isLoading: _scheduleIsLoading,
-		isError: _scheduleIsError
-	} = api.schedule.getSchedule.useQuery({
+	useEffect(() => {
+		if (onChange) {
+			onChange(timeSlotsState.timeSlots)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [timeSlotsState.timeSlots])
+
+	// Filter time slots that are not in the current week
+	const filteredTimeSlots = useMemo(() => {
+		return timeSlotsState.timeSlots.filter((timeSlot) => {
+			const timeSlotDate = dayjs(timeSlot.start)
+			return currentWeek.some((weekDay) => weekDay.isSame(timeSlotDate, "day"))
+		})
+	}, [currentWeek, timeSlotsState.timeSlots])
+
+	const [timeSlotDndOver, setTimeSlotDndOver] = useState<TimeSlotDndOver>({
+		col: null,
+		row: null,
+		span: null
+	})
+
+	const { data: schedule } = api.schedule.getSchedule.useQuery({
 		weekStart: currentWeek[0]?.toDate() || dayjs().startOf("week").toDate(),
 		status: statusFilter
 	})
 
 	return (
 		<CalendarContext.Provider
-			value={{ currentWeek, onTimeslotChange: handleTimeslotChange, changeWeek, mode, schedule: schedule || [] }}
+			value={{
+				currentWeek,
+				timeSlotDispatch,
+				timeSlots: timeSlotsState,
+				filteredTimeSlots,
+				timeSlotDndOver,
+				setTimeSlotDndOver,
+				changeWeek,
+				mode,
+				currentDate,
+				setCurrentDate,
+				schedule: schedule || []
+			}}
 		>
 			{children}
 		</CalendarContext.Provider>

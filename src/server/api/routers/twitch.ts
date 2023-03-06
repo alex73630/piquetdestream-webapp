@@ -1,13 +1,10 @@
 import { ApiClient } from "@twurple/api"
-import { RefreshingAuthProvider } from "@twurple/auth"
+import { AppTokenAuthProvider } from "@twurple/auth"
 import { z } from "zod"
 import { env } from "../../../env.mjs"
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
-const twitchAuthProvider = new RefreshingAuthProvider({
-	clientId: env.TWITCH_CLIENT_ID,
-	clientSecret: env.TWITCH_CLIENT_SECRET
-})
+const twitchAuthProvider = new AppTokenAuthProvider(env.TWITCH_CLIENT_ID, env.TWITCH_CLIENT_SECRET)
 
 const twitchClient = new ApiClient({
 	authProvider: twitchAuthProvider

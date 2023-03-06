@@ -27,7 +27,9 @@ export const scheduleRouter = createTRPCRouter({
 		)
 		.query(({ ctx, input }) => {
 			const weekStart = dayjs(input.weekStart).startOf("day").toDate()
-			const weekEnd = dayjs(input.weekStart).endOf("week").endOf("day").toDate()
+			const weekEnd = dayjs(input.weekStart).endOf("week").add(1, "day").startOf("day").toDate()
+
+			console.log(weekStart, weekEnd)
 
 			// If user unauthenticated, they can only see approved stream requests
 			if (!ctx.session?.user) {
@@ -77,7 +79,21 @@ export const scheduleRouter = createTRPCRouter({
 					})
 				},
 				include: {
-					streamRequestTimeSlots: true,
+					streamRequestTimeSlots: {
+						where: {
+							startTime: {
+								gte: weekStart
+							},
+							endTime: {
+								lte: weekEnd
+							},
+							...(input.status && {
+								status: {
+									in: input.status
+								}
+							})
+						}
+					},
 					streamer: true,
 					techAppointment: true
 				}

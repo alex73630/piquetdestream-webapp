@@ -3,12 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from "@hero
 import { Menu, Transition } from "@headlessui/react"
 import { classNames } from "../../utils/class-names"
 import Grid from "./grid"
-import {
-	type CalendarProps,
-	CalendarProvider,
-	useCalendarContext,
-	type CalendarProviderProps
-} from "./calendar-context"
+import { type CalendarProps, CalendarProvider, useCalendarContext } from "./calendar-context"
 
 function CalendarComponent() {
 	const { currentWeek, changeWeek } = useCalendarContext()
