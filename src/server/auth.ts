@@ -103,23 +103,23 @@ export const authOptions: NextAuthOptions = {
 			return session
 		},
 		async jwt({ token, user, account, isNewUser }) {
-			// Reject token if user is not in the guild
-			if (account && account.provider === "discord") {
-				if (account.access_token) {
-					try {
-						const guildMember = await DiscordOauthClient.getGuildMember(
-							account.access_token,
-							env.DISCORD_GUILD_ID
-						)
-						if (!guildMember) {
-							throw new Error("unauthorized")
-						}
-					} catch (error) {
-						console.log("Error while getting guild member", user?.name)
-						throw new Error("unauthorized")
-					}
-				}
-			}
+			// // Reject token if user is not in the guild
+			// if (account && account.provider === "discord") {
+			// 	if (account.access_token) {
+			// 		try {
+			// 			const guildMember = await DiscordOauthClient.getGuildMember(
+			// 				account.access_token,
+			// 				env.DISCORD_GUILD_ID
+			// 			)
+			// 			if (!guildMember) {
+			// 				throw new Error("unauthorized")
+			// 			}
+			// 		} catch (error) {
+			// 			console.log("Error while getting guild member", user?.name)
+			// 			throw new Error("unauthorized")
+			// 		}
+			// 	}
+			// }
 
 			// Throw error if new user from Twitch
 			if (account && account.provider === "twitch" && isNewUser) {
@@ -163,7 +163,7 @@ export const authOptions: NextAuthOptions = {
 							.filter((role) => !!role) as RolesEnum[]
 
 						// Update user state
-						await prisma.userState.upsert({
+						const userState = await prisma.userState.upsert({
 							where: {
 								userId: user.id
 							},
@@ -173,6 +173,18 @@ export const authOptions: NextAuthOptions = {
 							create: {
 								userId: user.id,
 								roles: roles
+							}
+						})
+						await prisma.user.update({
+							where: {
+								id: user.id
+							},
+							data: {
+								userState: {
+									connect: {
+										id: userState.id
+									}
+								}
 							}
 						})
 					} else {

@@ -75,13 +75,15 @@ export default function GuestSearch({ guests, onChange }: GuestSearchProps) {
 		<Combobox value={selectedGuests} onChange={(value) => setSelectedGuests(value)} multiple>
 			<Combobox.Label className="block text-sm font-medium text-gray-700">Invités</Combobox.Label>
 
-			{selectedGuests.length > 0 && (
-				<div className="my-2 flex flex-wrap gap-2">
-					{selectedGuests.map((guest, index) => (
+			<div className="my-2 flex flex-wrap gap-2">
+				{selectedGuests.length > 0 ? (
+					selectedGuests.map((guest, index) => (
 						<Badge key={index} text={guest.name} removable onRemove={() => handleRemoveGuest(index)} />
-					))}
-				</div>
-			)}
+					))
+				) : (
+					<Badge text={"Aucun invité"} />
+				)}
+			</div>
 			<div className="relative mt-1">
 				<Combobox.Input
 					className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:text-sm"
@@ -93,7 +95,7 @@ export default function GuestSearch({ guests, onChange }: GuestSearchProps) {
 					<ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
 				</Combobox.Button>
 
-				<Combobox.Options className="z-100 fixed mt-1 max-w-3xl overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+				<Combobox.Options className="z-100 absolute mt-1 max-w-3xl overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
 					{query.length > 0 && (
 						<Combobox.Option
 							className={({ active }) =>

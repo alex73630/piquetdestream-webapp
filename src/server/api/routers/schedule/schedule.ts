@@ -1,9 +1,12 @@
 import { StreamRequestTimeslotStatus, TechAppointmentStatus } from "@prisma/client"
 import dayjs from "dayjs"
+import "dayjs/locale/fr"
 import { z } from "zod"
 import { RolesEnum } from "../../../../interfaces/roles.enum"
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../../trpc"
 import { CreateStreamRequestValidation } from "./validators"
+
+dayjs.locale("fr")
 
 export const scheduleRouter = createTRPCRouter({
 	getSchedule: publicProcedure
@@ -24,7 +27,9 @@ export const scheduleRouter = createTRPCRouter({
 		)
 		.query(({ ctx, input }) => {
 			const weekStart = dayjs(input.weekStart).startOf("day").toDate()
-			const weekEnd = dayjs(input.weekStart).add(7, "day").endOf("day").toDate()
+			const weekEnd = dayjs(input.weekStart).endOf("week").add(1, "day").startOf("day").toDate()
+
+			console.log(weekStart, weekEnd)
 
 			// If user unauthenticated, they can only see approved stream requests
 			if (!ctx.session?.user) {
@@ -74,7 +79,21 @@ export const scheduleRouter = createTRPCRouter({
 					})
 				},
 				include: {
-					streamRequestTimeSlots: true,
+					streamRequestTimeSlots: {
+						where: {
+							startTime: {
+								gte: weekStart
+							},
+							endTime: {
+								lte: weekEnd
+							},
+							...(input.status && {
+								status: {
+									in: input.status
+								}
+							})
+						}
+					},
 					streamer: true,
 					techAppointment: true
 				}
@@ -100,7 +119,7 @@ export const scheduleRouter = createTRPCRouter({
 		if (!streamer) {
 			throw new Error("Streamer not found")
 		}
-		if (!streamer.userState[0]?.roles.includes(RolesEnum.STREAMER)) {
+		if (!streamer.userState?.roles.includes(RolesEnum.STREAMER)) {
 			throw new Error("User is not a streamer")
 		}
 
@@ -358,7 +377,7 @@ export const scheduleRouter = createTRPCRouter({
 			}
 
 			// Check if tech has tech role
-			if (!tech.userState[0]?.roles.includes(RolesEnum.TECH)) {
+			if (!tech.userState?.roles.includes(RolesEnum.TECH)) {
 				throw new Error("User is not a tech")
 			}
 
@@ -368,7 +387,7 @@ export const scheduleRouter = createTRPCRouter({
 					id: streamRequest.techAppointment?.id
 				},
 				create: {
-					StreamRequest: {
+					streamRequest: {
 						connect: {
 							id: input.streamRequestId
 						}
@@ -414,7 +433,7 @@ export const scheduleRouter = createTRPCRouter({
 					id: input.techAppointmentId
 				},
 				include: {
-					StreamRequest: true
+					streamRequest: true
 				}
 			})
 
@@ -455,7 +474,7 @@ export const scheduleRouter = createTRPCRouter({
 
 			return ctx.prisma.streamRequest.findUnique({
 				where: {
-					id: techAppointment.StreamRequest?.id
+					id: techAppointment.streamRequest?.id
 				},
 				include: {
 					streamRequestTimeSlots: true,

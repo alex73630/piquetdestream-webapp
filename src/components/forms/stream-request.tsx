@@ -1,6 +1,6 @@
 import { type StreamRequestTimeSlots, type StreamRequest } from "@prisma/client"
 import { Controller, useForm } from "react-hook-form"
-import { DevTool } from "@hookform/devtools"
+// import { DevTool } from "@hookform/devtools"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
 	type CreateStreamRequestInput,
@@ -15,6 +15,9 @@ import TextInput from "./fields/text-input"
 import TextAreaInput from "./fields/textarea-input"
 import TimePicker from "./fields/duration-input"
 import Calendar from "../calendar/calendar"
+import { CalendarModeEnum } from "../calendar/calendar-context"
+import { useCallback } from "react"
+import { type TimeSlotPayload } from "../calendar/timeslot-reducer"
 
 interface StreamRequestFormProps {
 	mode: "create" | "edit"
@@ -50,6 +53,7 @@ export default function StreamRequestForm({ mode, streamRequest, onSubmit }: Str
 		register,
 		handleSubmit,
 		control,
+		setValue,
 		formState: { errors },
 		getValues
 	} = useForm({
@@ -65,6 +69,16 @@ export default function StreamRequestForm({ mode, streamRequest, onSubmit }: Str
 			onSubmit ? void onSubmit({ mode, data: streamRequestPayload as EditStreamRequestInput }) : null
 		}
 	}
+
+	const calendarOnChange = useCallback(
+		(timeSlots: TimeSlotPayload[]) => {
+			setValue(
+				"streamRequestTimeSlots",
+				timeSlots.map((timeSlot) => ({ startTime: timeSlot.start.toDate(), endTime: timeSlot.end.toDate() }))
+			)
+		},
+		[setValue]
+	)
 
 	return (
 		<>
@@ -146,22 +160,7 @@ export default function StreamRequestForm({ mode, streamRequest, onSubmit }: Str
 								<Controller
 									name="streamRequestTimeSlots"
 									control={control}
-									render={({ field }) => (
-										<Calendar
-											mode="edit"
-											onChange={(events) => {
-												field.onChange({
-													target: {
-														name: field.name,
-														value: events.map((event) => ({
-															startTime: event.start.toDate(),
-															endTime: event.end.toDate()
-														}))
-													}
-												})
-											}}
-										/>
-									)}
+									render={() => <Calendar mode={CalendarModeEnum.REQUEST} onChange={calendarOnChange} />}
 								/>
 							</div>
 						</div>
@@ -179,7 +178,7 @@ export default function StreamRequestForm({ mode, streamRequest, onSubmit }: Str
 					</div>
 				</div>
 			</form>
-			<DevTool control={control} />
+			{/* <DevTool control={control} /> */}
 		</>
 	)
 }

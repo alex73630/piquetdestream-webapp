@@ -1,12 +1,13 @@
 import { StreamRequestTimeslotStatus } from "@prisma/client"
 import dayjs, { type Dayjs } from "dayjs"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import { api } from "../../utils/api"
 import { classNames } from "../../utils/class-names"
+import { CalendarModeEnum, useCalendarContext } from "./calendar-context"
 import Cell, { CellTypes } from "./cell"
-import TimeSlot, { type TimeSlotProps } from "./time-slot"
+import TimeSlot from "./time-slot"
+import { TimeSlotActionKind } from "./timeslot-reducer"
 
 export interface GridElement {
 	col: number
@@ -22,23 +23,10 @@ export interface CellRangeState {
 	colIndex: number | null
 }
 
-interface GridProps {
-	currentWeek: Dayjs[]
-	mode: "edit" | "view"
-	onChange?: (events: TimeSlotProps[]) => void
-}
+export default function Grid() {
+	const { currentWeek, currentDate, setCurrentDate, filteredTimeSlots, timeSlotDispatch, schedule, mode } =
+		useCalendarContext()
 
-export default function Grid({ currentWeek, onChange }: GridProps) {
-	const {
-		data: schedule,
-		isLoading: scheduleIsLoading,
-		isError: scheduleIsError
-	} = api.schedule.getSchedule.useQuery({
-		weekStart: currentWeek[0]?.toDate() || dayjs().startOf("week").toDate(),
-		status: [StreamRequestTimeslotStatus.APPROVED]
-	})
-
-	const [events, setEvents] = useState<TimeSlotProps[]>([])
 	const [cellRange, setCellRange] = useState<CellRangeState>({ startRow: null, endRow: null, colIndex: null })
 
 	const grid = useMemo<GridElement[][]>(() => {
@@ -52,8 +40,7 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 						const dateEnd = (currentWeek[col] as Dayjs).add((row + 1) * 30, "minute")
 
 						let cellType = CellTypes.FREE
-
-						if (!scheduleIsLoading && !scheduleIsError) {
+						if (schedule) {
 							const isOccupied = schedule.some(({ streamRequestTimeSlots }) =>
 								streamRequestTimeSlots.some(
 									({ startTime, endTime, status }) =>
@@ -69,6 +56,8 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 							}
 						}
 
+						if (dateEnd.isBefore(dayjs())) cellType = CellTypes.PAST
+
 						return {
 							col,
 							row,
@@ -78,37 +67,22 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 						}
 					})
 			)
-	}, [currentWeek, schedule, scheduleIsError, scheduleIsLoading])
+	}, [currentWeek, schedule])
 
 	const container = useRef<HTMLDivElement>(null)
 	const containerNav = useRef<HTMLDivElement>(null)
 	const containerOffset = useRef<HTMLDivElement>(null)
 
-	useEffect(() => {
-		if (container.current && containerNav.current && containerOffset.current) {
-			// Set the container scroll position based on the current time.
-			const currentMinute = new Date().getHours() * 60
-			container.current.scrollTop =
-				((container.current.scrollHeight - containerNav.current.offsetHeight - containerOffset.current.offsetHeight) *
-					currentMinute) /
-				1440
-		}
-	}, [container, containerNav, containerOffset])
-
-	const handleOnChangeEvent = useCallback(() => {
-		if (onChange) {
-			onChange(events)
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [events])
-
-	const handleAddEvent = useCallback((event: TimeSlotProps) => {
-		setEvents((events) => [...events, event])
-	}, [])
-
-	useEffect(() => {
-		handleOnChangeEvent()
-	}, [events, handleOnChangeEvent])
+	// useEffect(() => {
+	// 	if (container.current && containerNav.current && containerOffset.current) {
+	// 		// Set the container scroll position based on the current time.
+	// 		const currentMinute = new Date().getHours() * 60
+	// 		container.current.scrollTop =
+	// 			((container.current.scrollHeight - containerNav.current.offsetHeight - containerOffset.current.offsetHeight) *
+	// 				currentMinute) /
+	// 			1440
+	// 	}
+	// }, [container, containerNav, containerOffset])
 
 	return (
 		<div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-white">
@@ -119,7 +93,15 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 				>
 					<div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
 						{currentWeek.map((day, index) => (
-							<button key={index} type="button" className="flex flex-col items-center pt-2 pb-3">
+							<button
+								key={index}
+								type="button"
+								className={classNames(
+									"flex flex-col items-center pt-2 pb-3",
+									day.isSame(currentDate, "day") ? "bg-red-50" : ""
+								)}
+								onClick={() => setCurrentDate(day)}
+							>
 								{day.format("dd").charAt(0)}{" "}
 								<span
 									className={classNames(
@@ -160,14 +142,15 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 						<div className="grid flex-auto grid-cols-1 grid-rows-1">
 							{/* Horizontal lines */}
 							<div
-								className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
-								style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}
+								className="col-start-1 col-end-2 row-start-1 grid divide-y"
+								style={{ gridTemplateRows: "repeat(48, minmax(2rem, 1fr))" }}
 							>
 								<div ref={containerOffset} className="row-end-1 h-7"></div>
+								{/* //TODO: add a logic to generate a column of cells for mobile/sm display */}
 								{Array.from({ length: 48 }, (_, index) => {
 									if (index % 2 === 0) {
 										return (
-											<div key={index}>
+											<div key={index} className="border-gray-200">
 												<div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
 													{index === 0 ? "0:00" : `${index / 2}:00`}
 												</div>
@@ -175,7 +158,7 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 										)
 									}
 
-									return <div key={index} />
+									return <div key={index} className="border-gray-100" />
 								})}
 							</div>
 
@@ -186,18 +169,19 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 									<div
 										key={colIndex}
 										className={classNames("row-span-full grid", `col-start-${colIndex + 1}`)}
-										style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}
+										style={{ gridTemplateRows: "repeat(48, minmax(2rem, 1fr))" }}
 									>
-										{col.map((cell, rowIndex) => (
-											<Cell
-												key={rowIndex}
-												cell={cell}
-												grid={grid}
-												cellRange={cellRange}
-												setCellRange={setCellRange}
-												addEvent={handleAddEvent}
-											/>
-										))}
+										{/* //TODO: add a logic to disable cell render if we're on mobile/sm display */}
+										{mode !== CalendarModeEnum.VIEW &&
+											col.map((cell, rowIndex) => (
+												<Cell
+													key={rowIndex}
+													cell={cell}
+													grid={grid}
+													cellRange={cellRange}
+													setCellRange={setCellRange}
+												/>
+											))}
 									</div>
 								))}
 								<div className="col-start-8 row-span-full w-8" />
@@ -209,16 +193,26 @@ export default function Grid({ currentWeek, onChange }: GridProps) {
 								/* 48 = 24hrs divided in 30min blocks */
 								style={{ gridTemplateRows: "1.75rem repeat(48, minmax(0, 1fr)) auto" }}
 							>
-								{events.map((event, index) => (
-									<TimeSlot key={index} {...event} />
+								{filteredTimeSlots.map((event, index) => (
+									<TimeSlot
+										key={index}
+										{...event}
+										mode={"edit"}
+										onDelete={() =>
+											timeSlotDispatch({
+												type: TimeSlotActionKind.RemoveTimeSlot,
+												payload: event
+											})
+										}
+									/>
 								))}
 
-								{!scheduleIsLoading &&
-									!scheduleIsError &&
+								{schedule &&
 									schedule.map((event) =>
 										event.streamRequestTimeSlots.map((timeSlot, index) => (
 											<TimeSlot
 												key={index}
+												mode={"display"}
 												start={dayjs(timeSlot.startTime)}
 												end={dayjs(timeSlot.endTime)}
 												title={event.title}
