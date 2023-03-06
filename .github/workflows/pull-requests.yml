@@ -33,12 +33,12 @@ jobs:
       - name: Run ESLint
         uses: wearerequired/lint-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           # Enable linters
           eslint: true
-          eslint_args: --ext js,ts --fix ./src/**/*
+          eslint_args: --ext ts,tsx --fix ./src/**/*
           prettier: true
-          prettier_args: --write ./src/**/*.(js|ts|tsx|jsx|css|json)
+          prettier_args: --write ./src/**/*.(ts|tsx|css|json)
 
   buildAndTest:
     name: Build and test
