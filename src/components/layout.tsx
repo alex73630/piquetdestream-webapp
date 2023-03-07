@@ -15,7 +15,8 @@ import { RolesEnum } from "../interfaces/roles.enum"
 export enum NavigationEnum {
 	Dashboard = "Dashboard",
 	Planning = "Planning",
-	StreamRequest = "StreamRequest"
+	StreamRequest = "StreamRequest",
+	StreamKey = "StreamKey"
 }
 
 interface NavigationItem {
@@ -73,6 +74,17 @@ export default function Layout({ children, headerTitle, navigation }: LayoutProp
 				// Visble if user is streamer after completing OBS configuration step
 				visible: !!sessionData?.user.roles.includes(RolesEnum.STREAMER) && !!sessionData?.user.completedObsSetup,
 				current: navigation === NavigationEnum.StreamRequest
+			},
+			{
+				id: NavigationEnum.StreamKey,
+				name: "Stream Manifestation",
+				href: "/dashboard/irl",
+				// Visble if user is streamer after completing OBS configuration step
+				visible:
+					(!!sessionData?.user.roles.includes(RolesEnum.STREAMER) && !!sessionData?.user.completedObsSetup) ||
+					!!sessionData?.user.roles.includes(RolesEnum.TECH) ||
+					!!sessionData?.user.roles.includes(RolesEnum.ADMIN),
+				current: navigation === NavigationEnum.StreamKey
 			}
 		]
 	}, [navigation, sessionData])
