@@ -173,7 +173,7 @@ export default function Page() {
 					!displayPlayer ? "pointer-events-none hidden" : ""
 				)}
 			>
-				<div className={classNames("relative flex h-full w-full grow text-white")}>
+				<div className={classNames("relative flex h-full w-full grow justify-around text-white")}>
 					{selectedStream && displayPlayer ? (
 						<PlayerHls
 							channel={selectedStream}

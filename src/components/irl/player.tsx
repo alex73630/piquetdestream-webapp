@@ -1,6 +1,6 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid"
 import Hls from "hls.js"
-import { useMemo, useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import ReactHlsPlayer from "./hls-player"
 import Logo from "~/../public/logos/Logo-WoText.png"
 import Image from "next/image"
@@ -25,17 +25,15 @@ export default function PlayerHls({
 	const hls = useMemo(() => new Hls(), [])
 	const videoRef = useRef<HTMLVideoElement>(null)
 
-	const channelHlsUrl = useMemo(() => `https://piquet-stream.otterly.fr/clear/ch/${channel}/master.m3u8`, [channel])
+	const [enablePlayer, setEnablePlayer] = useState(true)
+
+	const channelHlsUrl = useMemo(() => `http://192.168.1.49:8000/clear/ch/${channel}/master.m3u8`, [channel])
 
 	const reloadPlayer = () => {
-		if (videoRef.current) {
-			hls.detachMedia()
-			hls.loadSource(channelHlsUrl)
-			hls.attachMedia(videoRef.current)
-			setTimeout(() => {
-				void videoRef.current?.play()
-			}, 500)
-		}
+		setEnablePlayer(false)
+		setTimeout(() => {
+			setEnablePlayer(true)
+		}, 200)
 	}
 
 	// return <video ref={videoRef} autoPlay={true} playsInline={true} className={className} controls muted />
@@ -48,16 +46,18 @@ export default function PlayerHls({
 				</div>
 			</div>
 			<div className="z-10 flex w-full" onClick={onClick}>
-				<ReactHlsPlayer
-					playerRef={videoRef}
-					src={channelHlsUrl}
-					autoPlay
-					controls={controls}
-					muted={muted}
-					width="100%"
-					height="auto"
-					className={className}
-				/>
+				{enablePlayer ? (
+					<ReactHlsPlayer
+						playerRef={videoRef}
+						src={channelHlsUrl}
+						autoPlay
+						controls={controls}
+						muted={muted}
+						width="100%"
+						height="auto"
+						className={className}
+					/>
+				) : null}
 			</div>
 			{reloadControl ? (
 				<div
