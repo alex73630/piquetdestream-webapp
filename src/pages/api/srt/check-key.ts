@@ -1,7 +1,9 @@
 import { TRPCError } from "@trpc/server"
 import { getHTTPStatusCodeFromError } from "@trpc/server/http"
 import { type NextApiRequest, type NextApiResponse } from "next"
+import { type z } from "zod"
 import { appRouter } from "../../../server/api/root"
+import { type checkKeyPayload } from "../../../server/api/routers/srt"
 import { createTRPCContext } from "../../../server/api/trpc"
 
 const srtOnEventHandler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -9,10 +11,20 @@ const srtOnEventHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const ctx = await createTRPCContext({ req, res })
 	const caller = appRouter.createCaller(ctx)
 	try {
-		console.log("log query", req.query)
-		const { id } = req.query
-		const user = {}
-		res.status(200).json(user)
+		// Send request to tRPC
+		const result = await caller.srt.checkKey(req.body as z.infer<typeof checkKeyPayload>)
+
+		if (result) {
+			// Send response
+			res.status(200).json({
+				success: true
+			})
+		} else {
+			// Send response
+			res.status(403).json({
+				success: false
+			})
+		}
 	} catch (cause) {
 		if (cause instanceof TRPCError) {
 			// An error from tRPC occured
