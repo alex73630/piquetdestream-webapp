@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.4.1...v1.5.0) (2023-03-07)
+
+
+### Bug Fixes
+
+* **irl:** typo url stream ([7c3d60f](https://github.com/alex73630/piquetdestream-webapp/commit/7c3d60f592bea308d57cf0574172378cf22cca59))
+
+
+### Features
+
+* **irl:** grid player ([748f09a](https://github.com/alex73630/piquetdestream-webapp/commit/748f09aa93580f0824fddf14cfbde760001b10ae))
+
 ## [1.4.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.4.0...v1.4.1) (2023-03-07)
 
 
