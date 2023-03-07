@@ -59,7 +59,7 @@ export default function StreamkeyList() {
 											<input
 												type="text"
 												className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring-red-500 sm:text-sm"
-												value={`https://piquet-stream.otterly.fr/clean/ch/${streamkey.channel}/master.m3u8`}
+												value={`https://piquet-stream.otterly.fr/clear/ch/${streamkey.channel}/master.m3u8`}
 												readOnly
 											/>
 										</div>
