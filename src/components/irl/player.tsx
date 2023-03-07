@@ -27,7 +27,7 @@ export default function PlayerHls({
 
 	const [enablePlayer, setEnablePlayer] = useState(true)
 
-	const channelHlsUrl = useMemo(() => `http://192.168.1.49:8000/clear/ch/${channel}/master.m3u8`, [channel])
+	const channelHlsUrl = useMemo(() => `https://piquet-stream.otterly.fr/clear/ch/${channel}/master.m3u8`, [channel])
 
 	const reloadPlayer = () => {
 		setEnablePlayer(false)
