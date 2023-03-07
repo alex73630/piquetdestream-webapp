@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.4.0...v1.4.1) (2023-03-07)
+
+
+### Bug Fixes
+
+* **irl:** typo url stream ([f6b918b](https://github.com/alex73630/piquetdestream-webapp/commit/f6b918b5b1dfd53986f390dc7ec1cc413e4f8f16))
+
 # [1.4.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.3.0...v1.4.0) (2023-03-07)
 
 
