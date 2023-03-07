@@ -1,3 +1,12 @@
+# [1.3.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.2.0...v1.3.0) (2023-03-07)
+
+
+### Features
+
+* add basic support for media-framework ([7ceab53](https://github.com/alex73630/piquetdestream-webapp/commit/7ceab53afc80a3949c99b009cc31a65e4a2dc4bf))
+* **irl:** improve media-framework support ([ae2e1d2](https://github.com/alex73630/piquetdestream-webapp/commit/ae2e1d277e35669f1cb9f58d30059051661db9c9))
+* livestream server support (pr [#3](https://github.com/alex73630/piquetdestream-webapp/issues/3)) ([d824c92](https://github.com/alex73630/piquetdestream-webapp/commit/d824c921db367b26084c9892e4852423fc1cfc07))
+
 # [1.2.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.1.1...v1.2.0) (2023-03-06)
 
 
