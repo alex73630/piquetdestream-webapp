@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.3.0...v1.4.0) (2023-03-07)
+
+
+### Features
+
+* **irl:** add channel name/stream link to list ([8901468](https://github.com/alex73630/piquetdestream-webapp/commit/8901468df9d62aaf72f95a0529eba22ddf5e246d))
+
 # [1.3.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.2.0...v1.3.0) (2023-03-07)
 
 
