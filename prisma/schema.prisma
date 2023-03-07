@@ -140,6 +140,7 @@ enum AvailabilityType {
 
 model StreamKey {
     id        Int      @id @default(autoincrement())
+    channel   String   @unique
     key       String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
