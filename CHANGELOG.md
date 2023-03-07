@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.0...v1.5.1) (2023-03-07)
+
+
+### Bug Fixes
+
+* **irl:** enhance grid ([3d110ce](https://github.com/alex73630/piquetdestream-webapp/commit/3d110ce263fe6b2e613507950ae09b97591c6d53))
+
 # [1.5.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.4.1...v1.5.0) (2023-03-07)
 
 
