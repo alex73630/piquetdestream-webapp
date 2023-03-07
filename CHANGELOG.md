@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.1...v1.5.2) (2023-03-07)
+
+
+### Bug Fixes
+
+* **irl:** fix url ([87cbf51](https://github.com/alex73630/piquetdestream-webapp/commit/87cbf512faa503bb41d466b1466b574d00644098))
+
 ## [1.5.1](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.0...v1.5.1) (2023-03-07)
 
 
