@@ -153,14 +153,6 @@ export const srtRouter = createTRPCRouter({
 		return Buffer.from(`ll_${newStreamKey.channel}:${newStreamKey.key}`).toString("base64")
 	}),
 	listKeyOwners: protectedProcedure.query(async ({ ctx }) => {
-		// Check if session user has role admin or tech
-		if (!ctx.session.user.roles.includes(RolesEnum.ADMIN) && !ctx.session.user.roles.includes(RolesEnum.TECH)) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "You don't have permission to do that"
-			})
-		}
-
 		// Get all stream keys
 		const streamKeys = await ctx.prisma.streamKey.findMany({
 			include: {
