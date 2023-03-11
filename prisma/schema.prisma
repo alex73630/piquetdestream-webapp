@@ -146,4 +146,6 @@ model StreamKey {
     updatedAt DateTime @updatedAt
     streamer  User     @relation(fields: [userId], references: [id])
     userId    String   @unique
+    enabled   Boolean  @default(false)
+    isLive    Boolean  @default(false)
 }

@@ -1,9 +1,23 @@
 import Image from "next/image"
+import { useCallback } from "react"
 import logo from "~/../public/logos/Logo-WoText.png"
 import { api } from "../../utils/api"
 
 export default function StreamkeyList() {
 	const streamkeys = api.srt.listKeyOwners.useQuery()
+
+	const changeStreamKeyStatusMutation = api.srt.changeKeyStatus.useMutation()
+	// const resetStreamKeyMutation = api.srt.resetKey.useMutation()
+	// const deleteStreamKeyMutation = api.srt.deleteStreamKey.useMutation()
+
+	const handleChangeStatus = useCallback(
+		async (userId: string, enabled: boolean) => {
+			await changeStreamKeyStatusMutation.mutateAsync({ user_id: userId, enabled })
+
+			await streamkeys.refetch()
+		},
+		[changeStreamKeyStatusMutation, streamkeys]
+	)
 
 	if (streamkeys.isLoading || !streamkeys.data) {
 		return <div>Loading...</div>
@@ -25,6 +39,9 @@ export default function StreamkeyList() {
 								</th>
 								<th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
 									URL
+								</th>
+								<th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
+									<span className="sr-only">Status</span>
 								</th>
 								<th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
 									<span className="sr-only">Reset</span>
@@ -65,12 +82,22 @@ export default function StreamkeyList() {
 										</div>
 									</td>
 									<td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-										<a href="#" className="text-indigo-600 hover:text-indigo-900">
+										<button
+											type="button"
+											className="text-red-600 hover:text-red-900"
+											onClick={() => void handleChangeStatus(streamkey.id, !streamkey.enabled)}
+										>
+											{streamkey.enabled ? "Désactiver" : "Activer"} la clé
+											<span className="sr-only">, {streamkey.name}</span>
+										</button>
+									</td>
+									<td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+										<a href="#" className="text-red-600 hover:text-red-900">
 											Reset<span className="sr-only">, {streamkey.name}</span>
 										</a>
 									</td>
 									<td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-										<a href="#" className="text-indigo-600 hover:text-indigo-900">
+										<a href="#" className="text-red-600 hover:text-red-900">
 											Delete<span className="sr-only">, {streamkey.name}</span>
 										</a>
 									</td>
