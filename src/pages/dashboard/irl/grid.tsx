@@ -99,7 +99,7 @@ export default function Page() {
 	const [enablePlayer, setEnablePlayer] = useState(false)
 	const [selectedStream, setSelectedStream] = useState<string | null>(null)
 
-	const streamListQuery = api.srt.listKeyOwners.useQuery()
+	const streamListQuery = api.srt.listActiveKeys.useQuery()
 
 	const [displayPlayer, setDisplayPlayer] = useState(false)
 
@@ -130,10 +130,18 @@ export default function Page() {
 		)
 
 	if (streamListQuery.isLoading)
-		return <div className="flex h-screen w-screen flex-wrap justify-around bg-gray-900 text-white">loading</div>
+		return (
+			<div className="flex h-screen w-screen flex-wrap justify-around bg-gray-900 text-white">
+				<span className="m-auto text-xl">Loading...</span>
+			</div>
+		)
 
 	if (!streamListQuery.data || streamListQuery.data.length === 0)
-		return <div className="flex h-screen w-screen flex-wrap justify-around bg-gray-900 text-white">loading</div>
+		return (
+			<div className="flex h-screen w-screen flex-wrap justify-around bg-gray-900 text-white">
+				<span className="m-auto text-xl">No active stream keys!</span>
+			</div>
+		)
 
 	return (
 		<div>

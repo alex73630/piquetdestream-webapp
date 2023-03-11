@@ -1,5 +1,4 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid"
-import Hls from "hls.js"
 import { useMemo, useRef, useState } from "react"
 import ReactHlsPlayer from "./hls-player"
 import Logo from "~/../public/logos/Logo-WoText.png"
@@ -22,7 +21,6 @@ export default function PlayerHls({
 	onClick,
 	reloadControl = false
 }: PlayerHlsProps) {
-	const hls = useMemo(() => new Hls(), [])
 	const videoRef = useRef<HTMLVideoElement>(null)
 
 	const [enablePlayer, setEnablePlayer] = useState(true)

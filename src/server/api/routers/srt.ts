@@ -16,7 +16,8 @@ export const srtRouter = createTRPCRouter({
 			const streamKey = await ctx.prisma.streamKey.findFirst({
 				where: {
 					key: input.stream_key,
-					channel: input.channel_id
+					channel: input.channel_id,
+					enabled: true
 				}
 			})
 
@@ -171,7 +172,186 @@ export const srtRouter = createTRPCRouter({
 			name: streamKey.streamer.name,
 			channel: streamKey.channel,
 			image: streamKey.streamer.image,
-			roles: streamKey.streamer.userState?.roles
+			roles: streamKey.streamer.userState?.roles,
+			enabled: streamKey.enabled,
+			isLive: streamKey.isLive
 		}))
-	})
+	}),
+	listActiveKeys: protectedProcedure.query(async ({ ctx }) => {
+		// Get all stream keys
+		const streamKeys = await ctx.prisma.streamKey.findMany({
+			where: {
+				enabled: true
+			},
+			include: {
+				streamer: {
+					include: {
+						accounts: true,
+						userState: true
+					}
+				}
+			}
+		})
+
+		// Return stream keys with user data
+		return streamKeys.map((streamKey) => ({
+			id: streamKey.streamer.id,
+			name: streamKey.streamer.name,
+			channel: streamKey.channel,
+			image: streamKey.streamer.image,
+			roles: streamKey.streamer.userState?.roles,
+			enabled: streamKey.enabled,
+			isLive: streamKey.isLive
+		}))
+	}),
+	changeKeyStatus: protectedProcedure
+		.input(
+			z.object({
+				user_id: z.string().min(1),
+				enabled: z.boolean()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// Check if session user has role admin or tech
+			if (!ctx.session.user.roles.includes(RolesEnum.ADMIN) && !ctx.session.user.roles.includes(RolesEnum.TECH)) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You don't have permission to do that"
+				})
+			}
+
+			// Get user from database with input user id
+			const user = await ctx.prisma.user.findFirst({
+				where: {
+					id: input.user_id
+				},
+				include: {
+					userState: true,
+					accounts: true
+				}
+			})
+
+			// Check if user exists, has role streamer and has a twitch account
+			if (
+				!user ||
+				!user.userState?.roles.includes(RolesEnum.STREAMER) ||
+				!user.accounts.find((account) => account.provider === "twitch")
+			) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "User not found"
+				})
+			}
+
+			// Update stream key
+			await ctx.prisma.streamKey.update({
+				where: {
+					userId: input.user_id
+				},
+				data: {
+					enabled: input.enabled
+				}
+			})
+
+			return input.enabled
+		}),
+	setLiveStatus: protectedProcedure
+		.input(
+			z.object({
+				user_id: z.string().min(1),
+				isLive: z.boolean()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// TODO: make it work from next api endpoint
+			// Check if session user has role admin or tech
+			if (!ctx.session.user.roles.includes(RolesEnum.ADMIN) && !ctx.session.user.roles.includes(RolesEnum.TECH)) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You don't have permission to do that"
+				})
+			}
+
+			// Get user from database with input user id
+			const user = await ctx.prisma.user.findFirst({
+				where: {
+					id: input.user_id
+				},
+				include: {
+					userState: true,
+					accounts: true
+				}
+			})
+
+			// Check if user exists, has role streamer and has a twitch account
+			if (
+				!user ||
+				!user.userState?.roles.includes(RolesEnum.STREAMER) ||
+				!user.accounts.find((account) => account.provider === "twitch")
+			) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "User not found"
+				})
+			}
+
+			// Update stream key
+			await ctx.prisma.streamKey.update({
+				where: {
+					userId: input.user_id
+				},
+				data: {
+					isLive: input.isLive
+				}
+			})
+
+			return input.isLive
+		}),
+	deleteStreamKey: protectedProcedure
+		.input(
+			z.object({
+				user_id: z.string().min(1)
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// Check if session user has role admin or tech
+			if (!ctx.session.user.roles.includes(RolesEnum.ADMIN) && !ctx.session.user.roles.includes(RolesEnum.TECH)) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You don't have permission to do that"
+				})
+			}
+
+			// Get user from database with input user id
+			const user = await ctx.prisma.user.findFirst({
+				where: {
+					id: input.user_id
+				},
+				include: {
+					userState: true,
+					accounts: true
+				}
+			})
+
+			// Check if user exists, has role streamer and has a twitch account
+			if (
+				!user ||
+				!user.userState?.roles.includes(RolesEnum.STREAMER) ||
+				!user.accounts.find((account) => account.provider === "twitch")
+			) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "User not found"
+				})
+			}
+
+			// Delete stream key
+			await ctx.prisma.streamKey.delete({
+				where: {
+					userId: input.user_id
+				}
+			})
+
+			return true
+		})
 })
