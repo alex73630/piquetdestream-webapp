@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.2...v1.6.0) (2023-03-11)
+
+
+### Features
+
+* **irl:** add key enable toggle ([b41d9cf](https://github.com/alex73630/piquetdestream-webapp/commit/b41d9cf79299397cef005639ff51745a69963367))
+
 ## [1.5.2](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.1...v1.5.2) (2023-03-07)
 
 
