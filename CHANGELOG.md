@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.6.0...v1.7.0) (2023-03-27)
+
+
+### Features
+
+* **irl:** add player page for obs ([e88eac2](https://github.com/alex73630/piquetdestream-webapp/commit/e88eac2e46320a9fc6b0e8ce386fc00193555237))
+
 # [1.6.0](https://github.com/alex73630/piquetdestream-webapp/compare/v1.5.2...v1.6.0) (2023-03-11)
 
 
